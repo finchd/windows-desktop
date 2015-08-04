@@ -1,1 +1,13 @@
+# ansible temp binaries
 *.pyc
+
+#windows binaries
+*.exe
+*.msu
+
+# large documentation
+*.pdf
+*.pptx
+
+# vagrant local files
+/.vagrant/
