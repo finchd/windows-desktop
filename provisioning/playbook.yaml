@@ -10,4 +10,4 @@
    - name: Run Get-WUList
      win_updates: category="Security Updates"
    - name: Install MobaXTerm Pro
-     path: Z:\MobaXterm_Pro_Setup_7.6.msi
+     path: Z:\\MobaXterm_Pro_Setup_7.6.msi
