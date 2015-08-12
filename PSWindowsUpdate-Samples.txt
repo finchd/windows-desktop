@@ -1,0 +1,2 @@
+Get-WUInstall -KBArticleID KB947821 //Takes a long time, seems to block newer updates.
+Get-WUInstall -NotKBArticleID KB971033 -IgnoreUserInput -AcceptAll -IgnoreReboot

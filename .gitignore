@@ -1,9 +1,11 @@
 # ansible temp binaries
 *.pyc
+provisioning/group_vars/
 
 #windows binaries
 *.exe
 *.msu
+*.msi
 
 # large documentation
 *.pdf
