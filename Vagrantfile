@@ -48,13 +48,13 @@ Vagrant.configure(2) do |config|
   # backing providers for Vagrant. These expose provider-specific options.
   # Example for VirtualBox:
   #
-  #config.vm.provider "virtualbox" do |vb|
+  config.vm.provider "virtualbox" do |vb|
   #   # Display the VirtualBox GUI when booting the machine
-  #  vb.gui = true
+    vb.gui = true
   #
   #   # Customize the amount of memory on the VM:
-  #   vb.memory = "2048"
-  #end
+     vb.memory = "2048" # must be 2048 or higher for Windows Update to complete
+  end
   #
   # View the documentation for the provider you are using for more
   # information on available options.
@@ -73,13 +73,93 @@ Vagrant.configure(2) do |config|
   #   sudo apt-get update
   #   sudo apt-get install -y apache2
   # SHELL
-  config.vm.provision "ansible" do |ansible|
+
+  # extend remote powershell allowances for vagrant provisioners
+  config.vm.provision "shell", inline: <<-SHELL
+    winrm set winrm/config/winrs '@{MaxShellsPerUser="100"}'
+    winrm set winrm/config/winrs '@{MaxProcessesPerShell="100"}'
+  SHELL
+
+  # install .NET 4.5.1
+  # install PowerShell/Windows Management Framework 3
+
+  # configure windows updates to be dl-only?
+  #Set-ItemProperty -Path "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate\\AU\\AUoptions" -Name newproperty  -Value "4"
+  #
+  config.vm.provision "shell", inline: <<-SHELL
+    echo "Check shared folder mount point"
+    cd C:\\vagrant
+    dir
+    echo "Start Windows Update Service"
+    Set-Service wuauserv -StartupType Manual
+    Start-Service -Name wuauserv
+    Get-Service wuauserv
+    echo "Installing .NET 4.5.1"
+    Start-Process -FilePath C:\\vagrant\\NDP451-KB2858728-x86-x64-AllOS-ENU.exe -Wait -ArgumentList /norestart /passive
+    echo "1st Reboot - .NET 4.5.1 installed"
+  SHELL
+
+  if Vagrant.has_plugin?("vagrant-reload")
+    config.vm.provision :reload
+  end
+
+  config.vm.provision "shell", inline: <<-SHELL
+    echo "Check shared folder mount point"
+    cd C:\\vagrant
+    dir
+    echo "Start Windows Update Service"
+    Set-Service wuauserv -StartupType Manual
+    Start-Service -Name wuauserv
+    Get-Service wuauserv
+    echo "Installing WMF 3.0"
+    Start-Process -FilePath C:\\vagrant\\Windows6.1-KB2506143-x64.msu -Wait -ArgumentList /quiet
+    echo "2nd Reboot - WMF installed"
+  SHELL
+
+
+  if Vagrant.has_plugin?("vagrant-reload")
+    config.vm.provision :reload
+  end
+
+  config.vm.provision "shell", inline: <<-SHELL
+    echo "configure WinRM for Ansible using their script"
+    C:\\vagrant\\ConfigureRemotingForAnsible.ps1
+  SHELL
+
+  #install Chocolatey manually https://github.com/ansible/ansible-modules-extras/issues/378
+  config.vm.provision "shell", inline: <<-SHELL
+    echo "Install Chocolatey manually"
+    iex ((new-object net.webclient).DownloadString('https://chocolatey.org/install.ps1'))
+    echo "2nd Reboot - chocolatey"
+  SHELL
+
+  if Vagrant.has_plugin?("vagrant-reload")
+    config.vm.provision :reload
+  end
+
+
+  # next, test Ansible's WinRM connection
+  config.vm.provision "ansible", run: "always" do |ansible|
     ansible.playbook = "provisioning/playbook.yaml"
     ansible.inventory_path = "provisioning/inventory"
     ansible.groups = {
       "windows" => ["default"]
     }
     ansible.ask_vault_pass = true
-  # # ansible.verbose  = "v"
+    #ansible.verbose  = "vv"
   end
+
+  # If successful, then run the below to install chocolatey packages, and my other favorite Windows tools.
+  #`ansible-playbook --connection=winrm --user=vagrant --ask-vault-pass --inventory-file=provisioning/inventory -vvv provisioning/playbook-adv.yaml`
+  # or....
+  config.vm.provision "ansible" do |ansible|
+    ansible.playbook = "provisioning/playbook-adv.yaml"
+    ansible.inventory_path = "provisioning/inventory"
+    ansible.groups = {
+      "windows" => ["default"]
+    }
+    ansible.ask_vault_pass = true
+    ansible.verbose  = "vvvv"
+  end
+
 end

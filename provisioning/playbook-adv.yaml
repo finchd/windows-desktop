@@ -1,0 +1,14 @@
+---
+ - hosts: windows
+   tasks:
+   - name: Install chocolatey
+     win_chocolatey: name="chocolatey"
+   - name: Use chocolatey to install my tools
+     win_chocolatey: name="git"
+   - name: Use chocolatey to install itunes
+     win_chocolatey: name="itunes"
+   - name: Run Get-WUList
+     win_updates: category="Security Updates"
+   - name: Install MobaXTerm Pro
+     win_msi: path=C:\\vagrant\MobaXterm_Pro_Setup_7.6.msi
+

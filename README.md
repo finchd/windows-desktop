@@ -2,11 +2,31 @@ Vagrant-Ansible-Windows
 =======================
 or, "I only need Windows for this one app..."
 
+NOTICE: Ansible's chocolatey module (win_chocolatey) currently does not
+work. at all. this is because of changes in chocolatey's commandline
+parsing. (Ansible v1.9.X)
+
 This repo tracks my work to use [Ansible](http://www.ansible.com) to
 automate a [Vagrant](http://www.vagrantup.com) environment for a
 "daily-driver" Windows desktop. Resisting the urge to put the MS
 update/patches necessary for Windows 7 Ansible support into the repo
 for now.
+
+Setup
+-----
+
+1. Clone this repo. remember that the VM is going to use 2GB of RAM. You
+   can reduce this in the Vagrantfile, but less than 2GB will cause
+Windows Updates to fail.
+2. Download the requisite Microsoft features that the Vagrantfile is
+   going to install:
+
+  * .NET 4.5.1 Full Installer
+  * WMF 3.0 Installer
+
+3. Run `vagrant up` to download the windows 7 x64 .box, then copy it a
+   running instance, and run the provisioners (scripts) embedded in the
+Vagrantfile and also the Ansible playbooks in provisioning/playbook*.yml
 
 Windows Login Security
 ----------------------
