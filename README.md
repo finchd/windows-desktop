@@ -2,18 +2,25 @@ Vagrant-Ansible-Windows
 =======================
 or, "I only need Windows for this one app..."
 
-NOTICE: Ansible's chocolatey module (win_chocolatey) currently does not
-work. at all. this is because of changes in chocolatey's commandline
-parsing. (Ansible v1.9.X)
-
 This repo tracks my work to use [Ansible](http://www.ansible.com) to
 automate a [Vagrant](http://www.vagrantup.com) environment for a
-"daily-driver" Windows desktop. Resisting the urge to put the MS
-update/patches necessary for Windows 7 Ansible support into the repo
-for now.
+"daily-driver" Windows desktop.
 
-Setup
------
+NOTICE: As I no longer use a Mac, Windows 10 support is being built in [Boxstarter](https://boxstarter.org/ ), which can run on the target machine directly, rather than Ansible with requires a Mac/Linux control machine.
+
+Setup (Win 10 + Boxstarter)(Local)
+----------------------------------
+
+1. Install latest Boxstarter from [boxstarter.org](https://boxstarter.org/ )
+2. Run from Boxstarter Shell with: `Install-BoxstarterPackage -PackageName <GitHub Raw URL to provisioning/boxstarter.ps1> -DisableReboots`
+
+Setup (Vagrant + Win10 + )
+--------------------------
+
+Requires:
+
+Setup (Win 7 + Vagrant + Ansible)
+---------------------------------
 
 1. Clone this repo. remember that the VM is going to use 2GB of RAM. You
    can reduce this in the Vagrantfile, but less than 2GB will cause
@@ -24,7 +31,7 @@ Windows Updates to fail.
   * .NET 4.5.1 Full Installer
   * WMF 3.0 Installer
 
-3. Run `vagrant up` to download the windows 7 x64 .box, then copy it a
+3. Run `vagrant up` to download the windows 7 x64 .box, make a copy of it for a
    running instance, and run the provisioners (scripts) embedded in the
 Vagrantfile and also the Ansible playbooks in provisioning/playbook*.yml
 
@@ -32,13 +39,15 @@ Windows Login Security
 ----------------------
 
 put an encrypted file windows.yml into provisioning/group_vars/ with the contents:
+```yaml
   ansible_ssh_user: vagrant
   ansible_ssh_pass: <password>
   ansible_ssh_port: 55986
   ansible_connection: winrm
+```
 
-use `ansible vault create provisioning/group_vars/windows.yml`
-then `ansible vault edit provisioning/group_vars/windows.yml` to edit in
+1. use `ansible vault create provisioning/group_vars/windows.yml`
+2. then `ansible vault edit provisioning/group_vars/windows.yml` to edit in
 your $EDITOR
 
 File Descriptions
@@ -47,9 +56,4 @@ fix-ssl.py works around the fact that Vagrant can use WinRM in
 plaintext, but Ansible cannot. I think.
 
 gitignored files
-
-NDP451\*.msu is .net 4.5.1
-
-KB\*143\*.msu is WMF 3.0 including PowerShell 3.0
-
-KB\*745\*.msu is WMF 4.0 including PowerShell 4.0
+----------------
